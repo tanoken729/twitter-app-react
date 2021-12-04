@@ -59,9 +59,20 @@ const useStyles = makeStyles((theme) => ({
 
 const Auth: React.FC = () => {
   const classes = useStyles();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
+
   const signInGoogle = async () => {
     await auth.signInWithPopup(provider).catch((err) => alert(err.message));
   };
+  const signInEmail = async () => {
+    await auth.signInWithEmailAndPassword(email, password);
+  };
+  const signUpEmail = async () => {
+    const authUser = await auth.createUserWithEmailAndPassword(email, password);
+  };
+
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
@@ -72,7 +83,7 @@ const Auth: React.FC = () => {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in
+            {isLogin ? "Login" : "Register"}
           </Typography>
           <form className={classes.form} noValidate>
             <TextField
@@ -85,6 +96,10 @@ const Auth: React.FC = () => {
               name="email"
               autoComplete="email"
               autoFocus
+              value={email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setEmail(e.target.value);
+              }}
             />
             <TextField
               variant="outlined"
@@ -96,16 +111,58 @@ const Auth: React.FC = () => {
               type="password"
               id="password"
               autoComplete="current-password"
+              value={password}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setPassword(e.target.value);
+              }}
             />
             <Button
-              type="submit"
               fullWidth
               variant="contained"
               color="primary"
               className={classes.submit}
+              startIcon={<EmailIcon />}
+              onClick={
+                isLogin
+                  ? //   ログインモード
+                    async () => {
+                      try {
+                        await signInEmail();
+                      } catch (err: any) {
+                        //   エラー発生時ダイアログで表示
+                        alert(err.message);
+                      }
+                    }
+                  : // レジスターモード
+                    async () => {
+                      try {
+                        await signUpEmail();
+                      } catch (err: any) {
+                        alert(err.message);
+                      }
+                    }
+              }
             >
-              Sign In
+              {isLogin ? "Login" : "Register"}
             </Button>
+            <Grid container>
+              <Grid item xs>
+                <span
+                  className={styles.login_reset}
+                  //   onClick={() => setOpenModal(true)}
+                >
+                  Forgot password ?
+                </span>
+              </Grid>
+              <Grid item>
+                <span
+                  className={styles.login_toggleMode}
+                  onClick={() => setIsLogin(!isLogin)}
+                >
+                  {isLogin ? "Create new account ?" : "Back to login"}
+                </span>
+              </Grid>
+            </Grid>
             <Button
               fullWidth
               variant="contained"
