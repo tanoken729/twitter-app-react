@@ -7,7 +7,7 @@ import { Avatar, Button, IconButton } from "@material-ui/core";
 import { storage, db, auth } from "../firebase";
 import AddAPhotoIcon from "@material-ui/icons/AddAPhoto";
 
-const TweetInput = () => {
+const TweetInput: React.FC = () => {
   // reduxのstateからuserstateを取得し、ローカルのuser変数に格納
   const user = useSelector(selectUser);
   const [tweetImage, setTweetImage] = useState<File | null>(null);
