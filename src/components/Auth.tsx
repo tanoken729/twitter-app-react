@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import styles from "./Auth.module.css";
 import { auth, provider, storage } from "../firebase";
+import { updateUserProfile } from "../features/userSlice";
 
 import {
   Avatar,
@@ -61,7 +62,12 @@ const Auth: React.FC = () => {
   const classes = useStyles();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUserName] = useState("");
+  // jsのfileオブジェクトかnullのユニオンタイプで指定
+  const [avatarImage, setAvatarImage] = useState<File | null>(null);
   const [isLogin, setIsLogin] = useState(true);
+  // updateUserProfileのアクションを実行するためdispatchを作成
+  const dispatch = useDispatch();
 
   const signInGoogle = async () => {
     await auth.signInWithPopup(provider).catch((err) => alert(err.message));
@@ -71,6 +77,33 @@ const Auth: React.FC = () => {
   };
   const signUpEmail = async () => {
     const authUser = await auth.createUserWithEmailAndPassword(email, password);
+    let url = "";
+    // avatarImageが存在する場合、firestorageに格納
+    if (avatarImage) {
+      // firebaseの仕様によりファイル名が同じものが来ると前のやつを上書きしてしまうため、ランダムな文字列に変換する
+      const S =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      const N = 16;
+      const randomChar = Array.from(crypto.getRandomValues(new Uint32Array(N)))
+        .map((n) => S[n % S.length])
+        .join("");
+      const fileName = randomChar + "_" + avatarImage.name;
+      // アップロード
+      await storage.ref(`avatars/${fileName}`).put(avatarImage);
+      // ファイルURL取得
+      url = await storage.ref("avatars").child(fileName).getDownloadURL();
+    }
+    await authUser.user?.updateProfile({
+      displayName: username,
+      photoURL: url,
+    });
+    // reduxのuser.stateに渡す
+    dispatch(
+      updateUserProfile({
+        displayName: username,
+        photoUrl: url,
+      })
+    );
   };
 
   return (
