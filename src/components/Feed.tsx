@@ -40,18 +40,23 @@ const Feed: React.FC = () => {
   return (
     <div className={styles.feed}>
       <TweetInput />
-      {/* post.tsxに渡す */}
-      {posts.map((post) => (
-        <Post
-          key={post.id}
-          postId={post.id}
-          avatar={post.avatar}
-          image={post.image}
-          text={post.text}
-          timestamp={post.timestamp}
-          username={post.username}
-        />
-      ))}
+      {/* 投稿がゼロの場合レンダリングしないようにする */}
+      {posts[0]?.id && (
+        <>
+          {/* post.tsxに渡す */}
+          {posts.map((post) => (
+            <Post
+              key={post.id}
+              postId={post.id}
+              avatar={post.avatar}
+              image={post.image}
+              text={post.text}
+              timestamp={post.timestamp}
+              username={post.username}
+            />
+          ))}
+        </>
+      )}
     </div>
   );
 };

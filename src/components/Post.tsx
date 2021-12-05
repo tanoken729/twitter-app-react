@@ -23,6 +23,22 @@ interface PROPS {
 
 // Feed.tsx側受け取る
 const Post: React.FC<PROPS> = (props) => {
+  const user = useSelector(selectUser);
+  const [comment, setComment] = useState("");
+  const newComment = (e: React.FormEvent<HTMLFormElement>) => {
+    // リフレッシュを防ぐ
+    e.preventDefault();
+    // dbアップロード
+    db.collection("posts").doc(props.postId).collection("comments").add({
+      avatar: user.photoUrl,
+      text: comment,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      username: user.displayName,
+    });
+    // 初期化
+    setComment("");
+  };
+
   return (
     <div className={styles.post}>
       <div className={styles.post_avatar}>
@@ -47,6 +63,29 @@ const Post: React.FC<PROPS> = (props) => {
             <img src={props.image} alt="tweet" />
           </div>
         )}
+        {/* コメントフォーム */}
+        <form onSubmit={newComment}>
+          <div className={styles.post_form}>
+            <input
+              className={styles.post_input}
+              type="text"
+              placeholder="Type new comment..."
+              value={comment}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setComment(e.target.value)
+              }
+            />
+            <button
+              disabled={!comment}
+              className={
+                comment ? styles.post_button : styles.post_buttonDisable
+              }
+              type="submit"
+            >
+              <SendIcon className={styles.post_sendIcon} />
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
